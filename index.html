@@ -50,6 +50,7 @@
         }
 
         input[type="text"],
+        textarea,
         input[type="number"] {
             width: 100%;
             padding: 12px;
@@ -60,9 +61,15 @@
         }
 
         input[type="text"]:focus,
+        textarea:focus,
         input[type="number"]:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            font-size: 1em; /* match Sets input text size */
         }
 
         input[type="number"] {
@@ -106,23 +113,8 @@
         
         <form id="workoutForm">
             <div class="form-group">
-                <label for="circuit1">Circuit 1</label>
-                <input type="text" id="circuit1" name="circuit1" placeholder="Enter exercise names separated by a comma">
-            </div>
-
-            <div class="form-group">
-                <label for="circuit2">Circuit 2</label>
-                <input type="text" id="circuit2" name="circuit2" placeholder="Enter exercise names separated by a comma">
-            </div>
-
-            <div class="form-group">
-                <label for="circuit3">Circuit 3</label>
-                <input type="text" id="circuit3" name="circuit3" placeholder="Enter exercise names separated by a comma">
-            </div>
-
-            <div class="form-group">
-                <label for="circuit4">Circuit 4</label>
-                <input type="text" id="circuit4" name="circuit4" placeholder="Enter exercise names separated by a comma">
+                <label for="exercises">List of exercises</label>
+                <textarea id="exercises" name="exercises" rows="8" placeholder="List exercises separated by commas, and circuits separated by semicolons e.g. Push-up, Pull-up, Sit-up; Lat pulldown, Dumbell fly, Dumbell press (max 4 circuits)"></textarea>
             </div>
 
             <div class="form-group">
@@ -160,17 +152,22 @@
                 return;
             }
 
-            // Get circuit values and parse comma-separated exercises
-            const circuit1Input = document.getElementById('circuit1').value.trim();
-            const circuit2Input = document.getElementById('circuit2').value.trim();
-            const circuit3Input = document.getElementById('circuit3').value.trim();
-            const circuit4Input = document.getElementById('circuit4').value.trim();
-
-            // Parse comma-separated exercises into arrays
-            const circuit1 = circuit1Input ? circuit1Input.split(',').map(e => e.trim()).filter(e => e) : [];
-            const circuit2 = circuit2Input ? circuit2Input.split(',').map(e => e.trim()).filter(e => e) : [];
-            const circuit3 = circuit3Input ? circuit3Input.split(',').map(e => e.trim()).filter(e => e) : [];
-            const circuit4 = circuit4Input ? circuit4Input.split(',').map(e => e.trim()).filter(e => e) : [];
+            // Get exercises input and parse circuits (separated by semicolons) and exercises (separated by commas)
+            const exercisesInput = document.getElementById('exercises').value.trim();
+            
+            // Split by semicolons to get circuits, then by commas to get exercises within each circuit
+            const circuitStrings = exercisesInput ? exercisesInput.split(';').map(c => c.trim()).filter(c => c) : [];
+            
+            // Parse each circuit into an array of exercises
+            const circuits = circuitStrings.map(circuitStr => 
+                circuitStr.split(',').map(e => e.trim()).filter(e => e)
+            );
+            
+            // Extract up to 4 circuits (pad with empty arrays if less than 4)
+            const circuit1 = circuits[0] || [];
+            const circuit2 = circuits[1] || [];
+            const circuit3 = circuits[2] || [];
+            const circuit4 = circuits[3] || [];
 
             // Store workout data in localStorage
             const workoutData = {
