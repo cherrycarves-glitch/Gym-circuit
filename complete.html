@@ -35,12 +35,48 @@
             color: #333;
             font-size: 3em;
             font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .total-time {
+            color: #666;
+            font-size: 3em;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Finished</h1>
+        <div class="total-time" id="totalTime">0:00:00</div>
     </div>
+
+    <script>
+        // Calculate and display total workout time
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Get workout start time from localStorage
+        const startTime = localStorage.getItem('workoutStartTime');
+        
+        if (startTime) {
+            const startTimestamp = parseInt(startTime);
+            const endTimestamp = Date.now();
+            const totalSeconds = Math.floor((endTimestamp - startTimestamp) / 1000);
+            
+            // Display total time
+            document.getElementById('totalTime').textContent = formatTime(totalSeconds);
+            
+            // Clear the start time from localStorage
+            localStorage.removeItem('workoutStartTime');
+        } else {
+            // If no start time found, show 0:00:00
+            document.getElementById('totalTime').textContent = '0:00:00';
+        }
+    </script>
 </body>
 </html>
