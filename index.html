@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Circuit Workout Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .start-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .start-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gym Circuit Workout</h1>
+        
+        <form id="workoutForm">
+            <div class="form-group">
+                <label for="circuit1">Circuit 1</label>
+                <input type="text" id="circuit1" name="circuit1" placeholder="Enter exercise names separated by a comma">
+            </div>
+
+            <div class="form-group">
+                <label for="circuit2">Circuit 2</label>
+                <input type="text" id="circuit2" name="circuit2" placeholder="Enter exercise names separated by a comma">
+            </div>
+
+            <div class="form-group">
+                <label for="circuit3">Circuit 3</label>
+                <input type="text" id="circuit3" name="circuit3" placeholder="Enter exercise names separated by a comma">
+            </div>
+
+            <div class="form-group">
+                <label for="circuit4">Circuit 4</label>
+                <input type="text" id="circuit4" name="circuit4" placeholder="Enter exercise names separated by a comma">
+            </div>
+
+            <div class="form-group">
+                <label for="sets">Sets</label>
+                <input type="number" id="sets" name="sets" min="1" max="10" placeholder="Enter number of sets (1-10)" required>
+            </div>
+
+            <button type="button" class="start-button" id="startButton">Start</button>
+        </form>
+    </div>
+
+    <script>
+        // Validate sets input to ensure it's between 1 and 10
+        const setsInput = document.getElementById('sets');
+        
+        setsInput.addEventListener('input', function() {
+            let value = parseInt(this.value);
+            if (value > 10) {
+                this.value = 10;
+            } else if (value < 1 && this.value !== '') {
+                this.value = 1;
+            }
+        });
+
+        // Handle Start button click
+        const startButton = document.getElementById('startButton');
+        
+        startButton.addEventListener('click', function() {
+            const sets = parseInt(setsInput.value);
+            
+            // Validate sets input
+            if (!sets || sets < 1 || sets > 10) {
+                alert('Please enter a valid number of sets between 1 and 10');
+                setsInput.focus();
+                return;
+            }
+
+            // Get circuit values and parse comma-separated exercises
+            const circuit1Input = document.getElementById('circuit1').value.trim();
+            const circuit2Input = document.getElementById('circuit2').value.trim();
+            const circuit3Input = document.getElementById('circuit3').value.trim();
+            const circuit4Input = document.getElementById('circuit4').value.trim();
+
+            // Parse comma-separated exercises into arrays
+            const circuit1 = circuit1Input ? circuit1Input.split(',').map(e => e.trim()).filter(e => e) : [];
+            const circuit2 = circuit2Input ? circuit2Input.split(',').map(e => e.trim()).filter(e => e) : [];
+            const circuit3 = circuit3Input ? circuit3Input.split(',').map(e => e.trim()).filter(e => e) : [];
+            const circuit4 = circuit4Input ? circuit4Input.split(',').map(e => e.trim()).filter(e => e) : [];
+
+            // Store workout data in localStorage
+            const workoutData = {
+                circuit1: circuit1,
+                circuit2: circuit2,
+                circuit3: circuit3,
+                circuit4: circuit4,
+                sets: sets
+            };
+
+            localStorage.setItem('workoutData', JSON.stringify(workoutData));
+            
+            // Initialize workout state
+            const workoutState = {
+                currentCircuit: 1,
+                currentSet: 1,
+                currentExerciseIndex: 0
+            };
+            localStorage.setItem('workoutState', JSON.stringify(workoutState));
+
+            // Navigate to workout page
+            window.location.href = 'workout.html';
+        });
+    </script>
+</body>
+</html>

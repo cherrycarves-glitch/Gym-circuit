@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout - Gym Circuit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2em;
+        }
+
+        .workout-info {
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            margin-bottom: 25px;
+        }
+
+        .info-value {
+            font-size: 2em;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .exercise-name {
+            color: #667eea;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .back-button {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .back-button:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .next-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .next-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Workout</h1>
+        
+        <div class="workout-info">
+            <div class="info-item">
+                <div class="info-value exercise-name" id="exerciseName">-</div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-value" id="setNumber">-</div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-value" id="circuitNumber">-</div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button class="back-button" id="backButton">Back</button>
+            <button class="next-button" id="nextButton">Next</button>
+        </div>
+    </div>
+
+    <script>
+        // Load workout data and state from localStorage
+        let workoutData = JSON.parse(localStorage.getItem('workoutData'));
+        let workoutState = JSON.parse(localStorage.getItem('workoutState'));
+
+        // If no data, redirect back to index
+        if (!workoutData || !workoutState) {
+            window.location.href = 'index.html';
+        }
+
+        // Get all circuits as arrays
+        const circuits = [
+            workoutData.circuit1 || [],
+            workoutData.circuit2 || [],
+            workoutData.circuit3 || [],
+            workoutData.circuit4 || []
+        ];
+
+        // Check if a circuit has exercises
+        function hasExercises(circuitIndex) {
+            return circuits[circuitIndex] && circuits[circuitIndex].length > 0;
+        }
+
+        // Find the next non-empty circuit
+        function findNextNonEmptyCircuit(startCircuit) {
+            for (let i = startCircuit; i < 4; i++) {
+                if (hasExercises(i)) {
+                    return i + 1; // Return 1-indexed circuit number
+                }
+            }
+            return null; // No more circuits
+        }
+
+        // Find the previous non-empty circuit
+        function findPreviousNonEmptyCircuit(startCircuit) {
+            for (let i = startCircuit - 2; i >= 0; i--) {
+                if (hasExercises(i)) {
+                    return i + 1; // Return 1-indexed circuit number
+                }
+            }
+            return null; // No previous circuits
+        }
+
+        // Find the first non-empty circuit
+        function findFirstNonEmptyCircuit() {
+            for (let i = 0; i < 4; i++) {
+                if (hasExercises(i)) {
+                    return i + 1; // Return 1-indexed circuit number
+                }
+            }
+            return 1; // Default to circuit 1 if all are empty
+        }
+
+        // Find the last non-empty circuit
+        function findLastNonEmptyCircuit() {
+            for (let i = 3; i >= 0; i--) {
+                if (hasExercises(i)) {
+                    return i + 1; // Return 1-indexed circuit number
+                }
+            }
+            return 4; // Default to circuit 4 if all are empty
+        }
+
+        // Get current circuit exercises
+        function getCurrentCircuitExercises() {
+            return circuits[workoutState.currentCircuit - 1] || [];
+        }
+
+        // Get current exercise name
+        function getCurrentExercise() {
+            const currentExercises = getCurrentCircuitExercises();
+            if (currentExercises.length === 0) return 'No exercises';
+            return currentExercises[workoutState.currentExerciseIndex] || 'No exercise';
+        }
+
+        // Update display
+        function updateDisplay() {
+            document.getElementById('exerciseName').textContent = getCurrentExercise();
+            document.getElementById('setNumber').textContent = `Set ${workoutState.currentSet}/${workoutData.sets}`;
+            document.getElementById('circuitNumber').textContent = `Circuit ${workoutState.currentCircuit}`;
+
+            // Update button states
+            updateButtonStates();
+        }
+
+        // Update button states (enable/disable based on position)
+        function updateButtonStates() {
+            const backButton = document.getElementById('backButton');
+            const nextButton = document.getElementById('nextButton');
+
+            const firstCircuit = findFirstNonEmptyCircuit();
+            const lastCircuit = findLastNonEmptyCircuit();
+
+            // Can go back if not at the very beginning of first non-empty circuit
+            const isAtStart = workoutState.currentCircuit === firstCircuit && 
+                             workoutState.currentSet === 1 && 
+                             workoutState.currentExerciseIndex === 0;
+
+            // Check if at the very end of last non-empty circuit
+            const isAtEnd = workoutState.currentCircuit === lastCircuit && 
+                           workoutState.currentSet === workoutData.sets &&
+                           workoutState.currentExerciseIndex === getCurrentCircuitExercises().length - 1;
+            
+            // Next button is always enabled (will navigate to completion page if at end)
+            nextButton.disabled = false;
+            if (isAtEnd) {
+                nextButton.textContent = 'Finish';
+            } else {
+                nextButton.textContent = 'Next';
+            }
+            
+            // Back button: if at start, allow going back to index, otherwise navigate workout
+            if (isAtStart) {
+                backButton.textContent = 'Back to Setup';
+            } else {
+                backButton.textContent = 'Back';
+            }
+        }
+
+        // Navigate to previous exercise
+        function goBack() {
+            const firstCircuit = findFirstNonEmptyCircuit();
+            
+            // If at the start, go back to index page
+            const isAtStart = workoutState.currentCircuit === firstCircuit && 
+                             workoutState.currentSet === 1 && 
+                             workoutState.currentExerciseIndex === 0;
+            
+            if (isAtStart) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const currentExercises = getCurrentCircuitExercises();
+
+            // Move to previous exercise in current circuit
+            if (workoutState.currentExerciseIndex > 0) {
+                workoutState.currentExerciseIndex--;
+            } else {
+                // Move to previous set
+                if (workoutState.currentSet > 1) {
+                    workoutState.currentSet--;
+                    // Go to last exercise of previous set
+                    workoutState.currentExerciseIndex = currentExercises.length - 1;
+                } else {
+                    // Move to previous non-empty circuit
+                    const prevCircuit = findPreviousNonEmptyCircuit(workoutState.currentCircuit);
+                    if (prevCircuit) {
+                        workoutState.currentCircuit = prevCircuit;
+                        const prevExercises = getCurrentCircuitExercises();
+                        workoutState.currentExerciseIndex = prevExercises.length > 0 ? prevExercises.length - 1 : 0;
+                        workoutState.currentSet = workoutData.sets;
+                    }
+                }
+            }
+
+            localStorage.setItem('workoutState', JSON.stringify(workoutState));
+            updateDisplay();
+        }
+
+        // Navigate to next exercise
+        function goNext() {
+            const lastCircuit = findLastNonEmptyCircuit();
+            
+            // Check if at the very end
+            const isAtEnd = workoutState.currentCircuit === lastCircuit && 
+                           workoutState.currentSet === workoutData.sets &&
+                           workoutState.currentExerciseIndex === getCurrentCircuitExercises().length - 1;
+            
+            // If at the end, navigate to completion page
+            if (isAtEnd) {
+                window.location.href = 'complete.html';
+                return;
+            }
+
+            const currentExercises = getCurrentCircuitExercises();
+
+            // Move to next exercise in current circuit
+            if (workoutState.currentExerciseIndex < currentExercises.length - 1) {
+                workoutState.currentExerciseIndex++;
+            } else {
+                // Move to next set
+                if (workoutState.currentSet < workoutData.sets) {
+                    workoutState.currentSet++;
+                    workoutState.currentExerciseIndex = 0;
+                } else {
+                    // Move to next non-empty circuit
+                    const nextCircuit = findNextNonEmptyCircuit(workoutState.currentCircuit);
+                    if (nextCircuit) {
+                        workoutState.currentCircuit = nextCircuit;
+                        workoutState.currentSet = 1;
+                        workoutState.currentExerciseIndex = 0;
+                    }
+                }
+            }
+
+            localStorage.setItem('workoutState', JSON.stringify(workoutState));
+            updateDisplay();
+        }
+
+        // Event listeners
+        document.getElementById('backButton').addEventListener('click', goBack);
+        document.getElementById('nextButton').addEventListener('click', goNext);
+
+        // Initialize: start at first non-empty circuit
+        const firstCircuit = findFirstNonEmptyCircuit();
+        if (!hasExercises(workoutState.currentCircuit - 1)) {
+            workoutState.currentCircuit = firstCircuit;
+            workoutState.currentSet = 1;
+            workoutState.currentExerciseIndex = 0;
+            localStorage.setItem('workoutState', JSON.stringify(workoutState));
+        }
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
