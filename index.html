@@ -191,6 +191,9 @@
             };
             localStorage.setItem('workoutState', JSON.stringify(workoutState));
 
+            // Store workout start time
+            localStorage.setItem('workoutStartTime', Date.now().toString());
+
             // Navigate to workout page
             window.location.href = 'workout.html';
         });

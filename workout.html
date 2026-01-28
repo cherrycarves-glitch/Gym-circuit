@@ -24,9 +24,9 @@
         .container {
             background: white;
             border-radius: 20px;
-            padding: 40px;
+            padding: 40px 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
+            max-width: 400px;
             width: 100%;
             text-align: center;
         }
@@ -42,7 +42,7 @@
         }
 
         .info-item {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
 
         .info-value {
@@ -51,23 +51,37 @@
             font-weight: 700;
         }
 
+        .timer {
+            font-size: 3em;
+            color: #333;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+
+        .timer.over-limit {
+            color: #e74c3c;
+        }
+
         .exercise-name {
             color: #667eea;
+            font-size: 3em;
         }
 
         .button-container {
             display: flex;
+            flex-direction: column;
+            align-items: center;
             gap: 15px;
             margin-top: 40px;
         }
 
         button {
-            flex: 1;
-            padding: 15px;
+            width: 70%;
+            padding: 22.5px 15px;
             border: none;
             border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: 600;
+            font-size: 1.5em;
+            font-weight: 800;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -105,9 +119,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Workout</h1>
-        
         <div class="workout-info">
+            <div class="info-item">
+                <div class="timer" id="timer">0:00</div>
+            </div>
             <div class="info-item">
                 <div class="info-value exercise-name" id="exerciseName">-</div>
             </div>
@@ -327,9 +342,59 @@
             updateDisplay();
         }
 
+        // Timer functionality
+        let timerSeconds = 0;
+        let timerInterval = null;
+        const timerElement = document.getElementById('timer');
+
+        // Format seconds as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update timer display
+        function updateTimer() {
+            timerElement.textContent = formatTime(timerSeconds);
+            
+            // Turn red if over 90 seconds (1 minute 30 seconds)
+            if (timerSeconds > 90) {
+                timerElement.classList.add('over-limit');
+            } else {
+                timerElement.classList.remove('over-limit');
+            }
+        }
+
+        // Start the timer
+        function startTimer() {
+            timerSeconds = 0;
+            updateTimer();
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            timerInterval = setInterval(function() {
+                timerSeconds++;
+                updateTimer();
+            }, 1000);
+        }
+
+        // Reset the timer
+        function resetTimer() {
+            timerSeconds = 0;
+            updateTimer();
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            startTimer();
+        }
+
         // Event listeners
         document.getElementById('backButton').addEventListener('click', goBack);
-        document.getElementById('nextButton').addEventListener('click', goNext);
+        document.getElementById('nextButton').addEventListener('click', function() {
+            resetTimer();
+            goNext();
+        });
 
         // Initialize: start at first non-empty circuit
         const firstCircuit = findFirstNonEmptyCircuit();
@@ -342,6 +407,9 @@
 
         // Initialize display
         updateDisplay();
+        
+        // Start the timer automatically
+        startTimer();
     </script>
 </body>
 </html>
